@@ -6,6 +6,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table (name = "Employee")
@@ -16,15 +19,21 @@ public class Employee {
 	@Column(name = "emp_id")
 	private long emp_id;
 	
+	@NotBlank(message = "Name is mandatory")
 	@Column(name = "emp_name")
 	private String emp_name;
 	
+	@Min(value = 0, message = "Salary must be positive")
 	@Column(name = "emp_salary")
 	private float emp_salary;
 	
+	
+	@Min(value = 18, message = "Age must be at least 18")
+	@Max(value = 65, message = "Age must be at least 65")
 	@Column(name = "emp_age")
 	private int emp_age;
 	
+	@NotBlank(message = "City is mandatory")
 	@Column(name = "emp_city")
 	private String emp_city;
 

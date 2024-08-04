@@ -17,8 +17,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.emp.exception.ResourceNotFoundException;
 import com.emp.model.Employee;
 import com.emp.repository.EmployeeRepository;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api")
@@ -29,9 +32,9 @@ public class EmployeeController {
 	EmployeeRepository employeeRepository;
 	
 	@PostMapping("/employees")
-	public String createNewEmployee(@RequestBody Employee employee) {
+	public ResponseEntity<String> createNewEmployee(@Valid @RequestBody Employee employee) {
 		employeeRepository.save(employee);
-		return "Employee Created in database";
+		return new ResponseEntity<>("Employee Created in database", HttpStatus.CREATED);
 	}
 	
 	@GetMapping("/employees")
@@ -45,15 +48,15 @@ public class EmployeeController {
 	public ResponseEntity<Employee> getEmployeeById( @PathVariable long empid){
 		Optional<Employee> emp = employeeRepository.findById(empid);
 		if(emp.isPresent()) {
-			return new ResponseEntity<Employee>(emp.get(), HttpStatus.FOUND);
+			return new ResponseEntity<Employee>(emp.get(), HttpStatus.OK);
 		} else {
-			return new ResponseEntity<Employee>(HttpStatus.NOT_FOUND);
+			throw new ResourceNotFoundException("Employee not found for this id :: " + empid);
 		}
 	}
 	
 	
 	@PutMapping("/employees/{empid}")
-	public String updateEmployeeById(@PathVariable Long empid, @RequestBody Employee employee) {
+	public ResponseEntity<String> updateEmployeeById(@PathVariable Long empid, @Valid @RequestBody Employee employee) {
 		Optional<Employee> emp = employeeRepository.findById(empid);
 		if(emp.isPresent()) {
 			Employee existEmp = emp.get();
@@ -62,22 +65,30 @@ public class EmployeeController {
 			existEmp.setEmp_age(employee.getEmp_age());
 			existEmp.setEmp_city(employee.getEmp_city());
 			employeeRepository.save(existEmp);
-			return "Employee details against Id " + empid + "updated";
+			return new ResponseEntity<>("Employee details against Id " + empid + "updated", HttpStatus.OK);
 		} else {
-			return "Employee Details does not exist for empid " + empid;
+			throw new ResourceNotFoundException("Employee not found for this id :: " + empid);
 		}
 	}
 	
 	@DeleteMapping("/employees/{empid}")
-	public String deleteEmployeeById( @PathVariable Long empid) {
-		employeeRepository.deleteById(empid);
-		return "Employee  Deteled Successfully";
+	public ResponseEntity<String> deleteEmployeeById( @PathVariable Long empid) {
+//		employeeRepository.deleteById(empid);
+//		return "Employee  Deteled Successfully";
+		Optional<Employee> emp = employeeRepository.findById(empid);
+		if(emp.isPresent()) {
+			employeeRepository.deleteById(empid);
+			return new ResponseEntity<>("Employee Deleted Successfully", HttpStatus.OK);
+		} else {
+			throw new ResourceNotFoundException("Employee not found for this id :: " + empid);
+
+		}
 	}
 	
 	@DeleteMapping("/employees")
-	public String deleteAllEmployee() {
+	public ResponseEntity<String> deleteAllEmployee() {
 		employeeRepository.deleteAll();
-		return "Employee Deleted Successfully..";
+		return new ResponseEntity<>("All Employees Deleted Successfully", HttpStatus.OK); 
 	}
 	
 
